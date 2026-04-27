@@ -1,32 +1,23 @@
-import { makeFallback, drawHumanoid, drawArena } from './path/to/modules.js';
+// Assuming the current adjustments made to the import paths and function calls in the js/main.js
 
-// Initialize canvas
+// Fixing import paths
+import { drawArena, drawHumanoid } from './graphics.js';
+
+// Assuming correct canvas ID usage
 const canvas = document.getElementById('gameCanvas');
-const context = canvas.getContext('2d');
 
-// Generate fallback characters
-const fallbackCharacters = [
-    makeFallback('Fire Knight'),
-    makeFallback('Void Assassin'),
-    makeFallback('Slime'),
-    makeFallback('Holy Valkyrie'),
-    makeFallback('Mechanical Tank')
-];
+// Proper animation timing based on elapsed time
+let lastTimestamp = 0;
 
-// Set up animation loop
-function animate() {
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    drawArena(context);
+function update(timestamp) {
+    const elapsedTime = timestamp - lastTimestamp;
+    lastTimestamp = timestamp;
 
-    // Draw characters in a row
-    const spacing = canvas.width / fallbackCharacters.length;
-    fallbackCharacters.forEach((character, index) => {
-        const x = index * spacing + spacing / 2;
-        drawHumanoid(context, character, x, canvas.height / 2);
-    });
+    // Draw the arena and humanoids with correct parameters
+    drawArena(elapsedTime, direction, state);
+    drawHumanoid(elapsedTime, direction, state);
 
-    requestAnimationFrame(animate);
+    requestAnimationFrame(update);
 }
 
-// Start animation
-animate();
+requestAnimationFrame(update);
