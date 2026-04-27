@@ -31,7 +31,7 @@
  */
 
 import { RENDERER_CONFIG } from "../config.js";
-import { hexRgb, rca, lc } from "./generator.js";
+import { hexRgb, rca, lc } from "../core/generator.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // INTERNAL COLOUR HELPERS
