@@ -15,49 +15,20 @@
 /* ─── CSS VARIABLES ─────────────────────────────────────────────────────── */
 
 :root {
-  /* Palette */
-  --bg-void:        #04060d;
-  --bg-deep:        #080c18;
-  --bg-mid:         #0d1220;
-  --bg-surface:     #111827;
-  --bg-raised:      #162032;
-  --bg-panel:       #0f1a2e;
-  --bg-panel-edge:  #192840;
+  /* Colors - Kept from your original */
+  --bg-void: #04060d;
+  --bg-deep: #080c18;
+  --bg-surface: #111827;
+  --clr-primary: #00e5ff;
+  --clr-muted: #4a5568;
+  --txt-mid: #94a3b8;
 
-  /* Terminal greens / accents */
-  --clr-primary:    #00e5ff;
-  --clr-secondary:  #7c3aed;
-  --clr-accent:     #f59e0b;
-  --clr-danger:     #ef4444;
-  --clr-success:    #22c55e;
-  --clr-muted:      #4a5568;
-  --clr-dim:        #2d3748;
+  /* NEW: Fluid Typography (Min 12px, scales with width, Max 16px) */
+  --font-size-base: clamp(12px, 0.8vw + 8px, 16px);
+  --font-size-small: clamp(9px, 0.6vw + 6px, 12px);
 
-  /* Text */
-  --txt-bright:     #e2e8f0;
-  --txt-mid:        #94a3b8;
-  --txt-dim:        #475569;
-  --txt-primary:    #00e5ff;
-
-  /* Glow effects */
-  --glow-primary:   0 0 8px rgba(0, 229, 255, 0.6), 0 0 20px rgba(0, 229, 255, 0.2);
-  --glow-accent:    0 0 8px rgba(245, 158, 11, 0.6), 0 0 20px rgba(245, 158, 11, 0.2);
-  --glow-danger:    0 0 8px rgba(239, 68, 68, 0.5);
-  --glow-success:   0 0 8px rgba(34, 197, 94, 0.5);
-
-  /* Borders */
-  --border-panel:   1px solid rgba(0, 229, 255, 0.12);
-  --border-active:  1px solid rgba(0, 229, 255, 0.45);
-
-  /* Typography */
-  --font-display:   'Orbitron', 'Courier New', monospace;
-  --font-mono:      'Share Tech Mono', 'Courier New', monospace;
-
-  /* Layout */
-  --header-h:       56px;
-  --footer-h:       32px;
-  --panel-gap:      12px;
-  --panel-radius:   4px;
+  /* Layout Constants */
+  --panel-gap: 12px;
 }
 
 /* ─── GLOBAL ────────────────────────────────────────────────────────────── */
@@ -65,129 +36,45 @@
 html, body {
   width: 100%;
   height: 100%;
+  margin: 0;
   overflow: hidden;
-  /* Added these two lines to allow the app to stretch vertically */
-  display: flex;
-  flex-direction: column;
+  background-color: var(--bg-void);
 }
 
 body {
-  background-color: var(--bg-void);
+  /* This Flexbox logic replaces all 'fixed' and 'absolute' positioning math */
+  display: flex;
+  flex-direction: column;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: var(--font-size-base);
   color: var(--txt-mid);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 1.5;
-
-  /* Subtle CRT scan-line texture */
-  background-image:
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 0, 0, 0.08) 2px,
-      rgba(0, 0, 0, 0.08) 4px
-    );
+  
+  /* Your CRT Texture */
+  background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.08) 2px, rgba(0, 0, 0, 0.08) 4px);
 }
-
-/* Scrollbar styling - Kept exactly the same */
-::-webkit-scrollbar           { width: 4px; }
-::-webkit-scrollbar-track     { background: var(--bg-deep); }
-::-webkit-scrollbar-thumb     { background: var(--clr-muted); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: var(--clr-primary); }
-
 /* ─── HEADER ────────────────────────────────────────────────────────────── */
 
-#app-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: var(--header-h);
+#app-header, #app-footer {
+  flex-shrink: 0; /* Prevents header/footer from squishing */
   background: var(--bg-deep);
-  border-bottom: 1px solid rgba(0, 229, 255, 0.18);
-  display: flex;
-  align-items: center;
   padding: 0 20px;
-  gap: 16px;
-  z-index: 100;
-
-  /* Subtle top edge glow */
-  box-shadow: 0 1px 0 rgba(0, 229, 255, 0.08), 0 2px 20px rgba(0, 0, 0, 0.6);
-}
-
-.header-glyph {
-  color: var(--clr-primary);
-  font-family: var(--font-display);
-  font-size: 14px;
-  opacity: 0.7;
-  letter-spacing: 2px;
-}
-
-#game-title {
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 900;
-  color: var(--txt-bright);
-  letter-spacing: 6px;
-  text-transform: uppercase;
-  flex: 1;
-}
-
-#game-title .accent {
-  color: var(--clr-primary);
-  text-shadow: var(--glow-primary);
-  margin-left: 4px;
-}
-
-.header-meta {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 11px;
-  color: var(--txt-dim);
-  letter-spacing: 2px;
+  border-color: rgba(0, 229, 255, 0.1);
+  border-style: solid;
 }
 
-#wave-display {
-  color: var(--clr-accent);
-  font-weight: bold;
-}
-
-#wave-number {
-  color: var(--txt-bright);
-}
-
-.sep {
-  color: var(--clr-muted);
-}
-
-#status-display {
-  color: var(--txt-dim);
-  transition: color 0.3s;
-}
-
-#status-display.active  { color: var(--clr-success); text-shadow: var(--glow-success); }
-#status-display.battle  { color: var(--clr-danger);  text-shadow: var(--glow-danger);  }
-#status-display.loading { color: var(--clr-accent);  text-shadow: var(--glow-accent);  animation: blink 1s infinite; }
-
+#app-header { height: 56px; border-bottom-width: 1px; justify-content: space-between; }
+#app-footer { height: 32px; border-top-width: 1px; justify-content: space-between; font-size: 9px; }
 /* ─── MAIN LAYOUT ───────────────────────────────────────────────────────── */
 
 #app-main {
-  position: fixed;
-  top: var(--header-h);
-  bottom: var(--footer-h);
-  left: 0;
-  right: 0;
+  flex-grow: 1; /* Automatically takes all remaining height between header/footer */
   display: grid;
-  /* UPDATED: Increased sidebar widths slightly for better proportions, 
-     keeping '1fr' to ensure the Arena expands to fill all remaining width */
-  grid-template-columns: 320px 1fr 340px; 
+  /* Adaptive Columns: Sidebars scale between 280px and 20% of screen */
+  grid-template-columns: minmax(280px, 20vw) 1fr minmax(280px, 20vw);
   gap: var(--panel-gap);
   padding: var(--panel-gap);
-  
-  /* IMPORTANT: Ensures the grid itself stretches to the full height 
-     defined by 'top' and 'bottom' */
-  align-items: stretch; 
   overflow: hidden;
 }
 
@@ -462,65 +349,28 @@ body {
 /* ─── ARENA PANEL ───────────────────────────────────────────────────────── */
 
 #panel-arena {
-  /* Force the panel to fill the vertical space of the center column */
   display: flex;
   flex-direction: column;
-  height: 100%; 
-  align-items: stretch;
+  height: 100%;
 }
 
 #canvas-wrap {
+  flex-grow: 1; /* Forces Arena to fill the void */
   position: relative;
-  /* CHANGED: flex-grow: 1 tells it to expand and fill all empty vertical space.
-     flex-shrink: 1 allows it to get smaller if the window is tiny. */
-  flex-grow: 1;
-  flex-shrink: 1;
-  /* UPDATED: margin now includes 10px bottom to give it air above the HUD */
-  margin: 10px 12px; 
+  margin: 10px 0;
+  background: var(--bg-deep);
   border: 1px solid rgba(0, 229, 255, 0.15);
-  border-radius: 3px;
-  overflow: hidden;
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 40px rgba(0, 0, 0, 0.3);
-  
-  /* Added to ensure the canvas inside stays centered if there's extra room */
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-deep);
+  overflow: hidden;
 }
 
 #arena-canvas {
-  display: block;
-  /* CHANGED: height: 100% forces the canvas to stretch to the new wrap size.
-     The 'resize' function in main.js will keep the pixels crisp. */
   width: 100%;
-  height: 100%; 
+  height: 100%;
+  object-fit: contain; /* Keeps character proportions safe */
   image-rendering: pixelated;
-}
-
-/* Overlay and Text stay the same—they use 'absolute' and 'inset: 0'
-   so they will automatically stretch with the new canvas size. */
-.canvas-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(4, 6, 13, 0.82);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.4s;
-}
-
-.canvas-overlay.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.overlay-text {
-  font-family: var(--font-display);
-  font-size: 11px;
-  color: var(--clr-muted);
-  letter-spacing: 6px;
-  text-transform: uppercase;
 }
 
 /* ─── COMBATANT HUD ─────────────────────────────────────────────────────── */
@@ -696,29 +546,6 @@ body {
   letter-spacing: 2px;
   padding: 6px 14px;
 }
-
-/* ─── FOOTER ────────────────────────────────────────────────────────────── */
-
-#app-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: var(--footer-h);
-  background: var(--bg-deep);
-  border-top: 1px solid rgba(0, 229, 255, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  font-size: 9px;
-  letter-spacing: 2.5px;
-  color: var(--txt-dim);
-  text-transform: uppercase;
-}
-
-#footer-source-mode { color: var(--txt-dim); }
-#source-mode-val    { color: var(--clr-primary); }
 
 /* ─── UTILITY CLASSES ───────────────────────────────────────────────────── */
 
