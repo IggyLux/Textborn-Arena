@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TEXTBORN ARENA</title>
+
+  <!-- Google Fonts: Terminal-adjacent display + mono body -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       HEADER
+  ════════════════════════════════════════════════════════════════ -->
+  <header id="app-header">
+    <div class="header-glyph">▸▸</div>
+    <h1 id="game-title">TEXTBORN<span class="accent">ARENA</span></h1>
+    <div class="header-meta">
+      <span id="wave-display">WAVE <span id="wave-number">—</span></span>
+      <span class="sep">|</span>
+      <span id="status-display">IDLE</span>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       MAIN LAYOUT
+  ════════════════════════════════════════════════════════════════ -->
+  <main id="app-main">
+
+    <!-- LEFT PANEL: Character Generator -->
+    <section id="panel-generator" class="panel">
+      <h2 class="panel-title">// FORGE CHAMPION</h2>
+
+      <div class="input-block">
+        <label for="champion-input" class="field-label">CHAMPION NAME OR CONCEPT</label>
+        <input
+          type="text"
+          id="champion-input"
+          class="terminal-input"
+          placeholder="e.g. Ashveil the Cursed Ranger"
+          maxlength="80"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+
+      <div class="input-block">
+        <label for="style-input" class="field-label">COMBAT STYLE (OPTIONAL)</label>
+        <input
+          type="text"
+          id="style-input"
+          class="terminal-input"
+          placeholder="e.g. berserker, shadow mage, iron golem"
+          maxlength="60"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+
+      <button id="btn-generate" class="btn btn-primary">
+        <span class="btn-prefix">▶</span> GENERATE &amp; ENTER ARENA
+      </button>
+
+      <div id="generator-status" class="status-line" aria-live="polite"></div>
+
+      <!-- Champion stat preview (populated after generation) -->
+      <div id="champion-card" class="stat-card hidden" aria-label="Champion stats">
+        <div class="stat-card-name" id="card-name">—</div>
+        <div class="stat-card-archetype" id="card-archetype">—</div>
+        <div class="stat-grid">
+          <div class="stat-row"><span class="stat-label">HP</span>      <span class="stat-bar-wrap"><span class="stat-bar" id="bar-hp"></span></span>     <span class="stat-val" id="val-hp">—</span></div>
+          <div class="stat-row"><span class="stat-label">ATK</span>     <span class="stat-bar-wrap"><span class="stat-bar" id="bar-atk"></span></span>    <span class="stat-val" id="val-atk">—</span></div>
+          <div class="stat-row"><span class="stat-label">DEF</span>     <span class="stat-bar-wrap"><span class="stat-bar" id="bar-def"></span></span>    <span class="stat-val" id="val-def">—</span></div>
+          <div class="stat-row"><span class="stat-label">SPD</span>     <span class="stat-bar-wrap"><span class="stat-bar" id="bar-spd"></span></span>    <span class="stat-val" id="val-spd">—</span></div>
+          <div class="stat-row"><span class="stat-label">CRIT</span>    <span class="stat-bar-wrap"><span class="stat-bar" id="bar-crit"></span></span>   <span class="stat-val" id="val-crit">—</span></div>
+        </div>
+        <div class="lore-block" id="card-lore">—</div>
+      </div>
+    </section>
+
+    <!-- CENTER PANEL: Canvas Arena -->
+    <section id="panel-arena" class="panel panel-center">
+      <h2 class="panel-title">// ARENA</h2>
+      <div id="canvas-wrap">
+        <canvas id="arena-canvas" width="520" height="340" aria-label="Battle arena"></canvas>
+        <div id="canvas-overlay" class="canvas-overlay">
+          <span class="overlay-text">AWAITING COMBATANTS</span>
+        </div>
+      </div>
+
+      <!-- HP bars under canvas -->
+      <div id="combatant-hud">
+        <div class="hud-fighter" id="hud-player">
+          <span class="hud-name" id="hud-player-name">PLAYER</span>
+          <div class="hud-bar-track">
+            <div class="hud-bar hud-bar-player" id="hud-hp-player"></div>
+          </div>
+          <span class="hud-hp-val" id="hud-hp-val-player">—</span>
+        </div>
+        <div class="hud-vs">VS</div>
+        <div class="hud-fighter hud-fighter-right" id="hud-enemy">
+          <span class="hud-name" id="hud-enemy-name">ENEMY</span>
+          <div class="hud-bar-track">
+            <div class="hud-bar hud-bar-enemy" id="hud-hp-enemy"></div>
+          </div>
+          <span class="hud-hp-val" id="hud-hp-val-enemy">—</span>
+        </div>
+      </div>
+
+      <!-- Battle controls -->
+      <div id="battle-controls">
+        <button id="btn-battle" class="btn btn-battle" disabled>
+          <span class="btn-prefix">⚔</span> START BATTLE
+        </button>
+        <button id="btn-next-wave" class="btn btn-secondary hidden">
+          <span class="btn-prefix">▶</span> NEXT WAVE
+        </button>
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: Combat Log -->
+    <section id="panel-log" class="panel">
+      <h2 class="panel-title">// COMBAT LOG</h2>
+      <div id="combat-log" role="log" aria-live="polite" aria-label="Combat log">
+        <div class="log-entry log-system">[ SYSTEM ONLINE — ARENA READY ]</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       FOOTER
+  ════════════════════════════════════════════════════════════════ -->
+  <footer id="app-footer">
+    <span>TEXTBORN ARENA // PROCEDURAL AUTO-BATTLER</span>
+    <span id="footer-source-mode">SOURCE: <span id="source-mode-val">—</span></span>
+  </footer>
+
+  <!-- Entry point — type="module" enables ES6 imports -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
