@@ -1,31 +1,48 @@
 import { makeFallback } from './core/generator.js';
-import { drawHumanoid, drawArena } from './render/renderer.js';
+import { drawHumanoid } from './render/renderer.js';
 
 const canvas = document.getElementById('arena-canvas');
 const ctx = canvas.getContext('2d');
+const btnEnter = document.getElementById('enter-arena-btn'); // Make sure this ID matches your HTML
+const nameInput = document.getElementById('champion-name'); // Make sure this ID matches your HTML
 
-const characters = [
-    makeFallback('Fire Knight'),
-    makeFallback('Void Assassin'),
-    makeFallback('Slime'),
-    makeFallback('Holy Valkyrie'),
-    makeFallback('Mechanical Tank')
-];
+let currentChampion = null;
 
-const characterPositions = [60, 140, 220, 300, 380];
-const baseY = canvas.height * 0.65;
-let startTime = Date.now();
+// Set canvas size
+canvas.width = 800;
+canvas.height = 600;
+
+// THE "GLUE": What happens when you click the button
+btnEnter.addEventListener('click', () => {
+    const name = nameInput.value || "Mystery Fighter";
+    console.log("Generating champion for:", name);
+    
+    // Create the character data using the fallback hash system
+    currentChampion = makeFallback(name);
+    
+    // Switch UI views (This assumes your CSS/HTML uses these classes)
+    document.getElementById('setup-screen').style.display = 'none';
+    document.getElementById('arena-screen').style.display = 'block';
+});
 
 function gameLoop() {
-    const elapsedMs = Date.now() - startTime;
-    const t = elapsedMs / 1000;
+    const t = Date.now() / 1000;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawArena(ctx, canvas.width, canvas.height, t);
 
-    characters.forEach((character, index) => {
-        const x = characterPositions[index];
-        drawHumanoid(ctx, character, x, baseY, 1.0, t, 1, { isAttacking: false, isDead: false, isMoving: false });
-    });
+    // Only draw if we have a champion
+    if (currentChampion) {
+        drawHumanoid(
+            ctx, 
+            currentChampion, 
+            canvas.width / 2, 
+            canvas.height * 0.7, 
+            100, 
+            t, 
+            1, 
+            false, false, false
+        );
+    }
+
     requestAnimationFrame(gameLoop);
 }
 
