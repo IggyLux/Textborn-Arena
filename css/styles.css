@@ -66,6 +66,9 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  /* Added these two lines to allow the app to stretch vertically */
+  display: flex;
+  flex-direction: column;
 }
 
 body {
@@ -86,11 +89,11 @@ body {
     );
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar               { width: 4px; }
-::-webkit-scrollbar-track         { background: var(--bg-deep); }
-::-webkit-scrollbar-thumb         { background: var(--clr-muted); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover   { background: var(--clr-primary); }
+/* Scrollbar styling - Kept exactly the same */
+::-webkit-scrollbar           { width: 4px; }
+::-webkit-scrollbar-track     { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb     { background: var(--clr-muted); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--clr-primary); }
 
 /* ─── HEADER ────────────────────────────────────────────────────────────── */
 
@@ -176,9 +179,15 @@ body {
   left: 0;
   right: 0;
   display: grid;
-  grid-template-columns: 280px 1fr 260px;
+  /* UPDATED: Increased sidebar widths slightly for better proportions, 
+     keeping '1fr' to ensure the Arena expands to fill all remaining width */
+  grid-template-columns: 320px 1fr 340px; 
   gap: var(--panel-gap);
   padding: var(--panel-gap);
+  
+  /* IMPORTANT: Ensures the grid itself stretches to the full height 
+     defined by 'top' and 'bottom' */
+  align-items: stretch; 
   overflow: hidden;
 }
 
@@ -453,26 +462,44 @@ body {
 /* ─── ARENA PANEL ───────────────────────────────────────────────────────── */
 
 #panel-arena {
+  /* Force the panel to fill the vertical space of the center column */
+  display: flex;
+  flex-direction: column;
+  height: 100%; 
   align-items: stretch;
 }
 
 #canvas-wrap {
   position: relative;
-  flex-shrink: 0;
-  margin: 10px 12px 0;
+  /* CHANGED: flex-grow: 1 tells it to expand and fill all empty vertical space.
+     flex-shrink: 1 allows it to get smaller if the window is tiny. */
+  flex-grow: 1;
+  flex-shrink: 1;
+  /* UPDATED: margin now includes 10px bottom to give it air above the HUD */
+  margin: 10px 12px; 
   border: 1px solid rgba(0, 229, 255, 0.15);
   border-radius: 3px;
   overflow: hidden;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 40px rgba(0, 0, 0, 0.3);
+  
+  /* Added to ensure the canvas inside stays centered if there's extra room */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-deep);
 }
 
 #arena-canvas {
   display: block;
+  /* CHANGED: height: 100% forces the canvas to stretch to the new wrap size.
+     The 'resize' function in main.js will keep the pixels crisp. */
   width: 100%;
-  height: auto;
+  height: 100%; 
   image-rendering: pixelated;
 }
 
+/* Overlay and Text stay the same—they use 'absolute' and 'inset: 0'
+   so they will automatically stretch with the new canvas size. */
 .canvas-overlay {
   position: absolute;
   inset: 0;
@@ -730,15 +757,30 @@ body {
 @media (max-width: 860px) {
   #app-main {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
+    /* Changed middle row to 1fr so the Arena still tries to be the biggest element */
+    grid-template-rows: auto 1fr auto; 
+    gap: var(--panel-gap);
     overflow-y: auto;
-    height: auto;
-    bottom: auto;
+    /* We keep height at 100% of the available space instead of auto 
+       to prevent the "postage stamp" canvas on mobile */
+    height: calc(100vh - var(--header-h) - var(--footer-h));
+    bottom: var(--footer-h);
   }
 
+  /* Allow the page to scroll only if the content truly overflows the height */
   html, body { overflow: auto; }
 
   #app-main .panel {
-    min-height: 300px;
+    min-height: 200px;
+  }
+
+  /* Specific height for the Arena on mobile so it doesn't vanish */
+  #panel-arena {
+    min-height: 400px; 
+    flex: 1;
+  }
+
+  #canvas-wrap {
+    margin: 5px; /* Tighter margins for small screens */
   }
 }
