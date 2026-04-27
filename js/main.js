@@ -53,7 +53,7 @@ function gameLoop() {
             currentChampion, 
             canvas.width / 2, 
             canvas.height * 0.8, // Anchored near the bottom
-            80,                  // Scaled for a smaller canvas
+            40,                  // Scaled for a smaller canvas
             t, 
             1, 
             false, false, false
