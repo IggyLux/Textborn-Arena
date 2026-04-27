@@ -1,23 +1,32 @@
-// Assuming the current adjustments made to the import paths and function calls in the js/main.js
+import { makeFallback } from './core/generator.js';
+import { drawHumanoid, drawArena } from './render/renderer.js';
 
-// Fixing import paths
-import { drawArena, drawHumanoid } from './graphics.js';
+const canvas = document.getElementById('arena-canvas');
+const ctx = canvas.getContext('2d');
 
-// Assuming correct canvas ID usage
-const canvas = document.getElementById('gameCanvas');
+const characters = [
+    makeFallback('Fire Knight'),
+    makeFallback('Void Assassin'),
+    makeFallback('Slime'),
+    makeFallback('Holy Valkyrie'),
+    makeFallback('Mechanical Tank')
+];
 
-// Proper animation timing based on elapsed time
-let lastTimestamp = 0;
+const characterPositions = [60, 140, 220, 300, 380];
+const baseY = canvas.height * 0.65;
+let startTime = Date.now();
 
-function update(timestamp) {
-    const elapsedTime = timestamp - lastTimestamp;
-    lastTimestamp = timestamp;
+function gameLoop() {
+    const elapsedMs = Date.now() - startTime;
+    const t = elapsedMs / 1000;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawArena(ctx, canvas.width, canvas.height, t);
 
-    // Draw the arena and humanoids with correct parameters
-    drawArena(elapsedTime, direction, state);
-    drawHumanoid(elapsedTime, direction, state);
-
-    requestAnimationFrame(update);
+    characters.forEach((character, index) => {
+        const x = characterPositions[index];
+        drawHumanoid(ctx, character, x, baseY, 1.0, t, 1, { isAttacking: false, isDead: false, isMoving: false });
+    });
+    requestAnimationFrame(gameLoop);
 }
 
-requestAnimationFrame(update);
+gameLoop();
