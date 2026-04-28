@@ -1,25 +1,19 @@
-/* ============================================================================
-   TEXTBORN ARENA — main.js (REWRITTEN FOR RESOLUTION INDEPENDENCE)
-   ============================================================================ */
-
 /**
- * CORE CONFIGURATION
- * We use a "Reference Height" of 600. 
- * If the Arena is 1200px tall on a 4K screen, the scale is 2.0.
+ * TEXTBORN ARENA — CORE ENGINE
+ * Scaled for Resolution Independence
  */
-const REFERENCE_HEIGHT = 600;
 
-// State Management
-const gameState = {
+// Configuration
+const REFERENCE_HEIGHT = 600; // Base height for coordinate math
+
+// Engine State
+const state = {
     player: null,
     enemy: null,
     isBattleActive: false,
     wave: 1,
-    uiScale: 1, // This will be calculated dynamically
-    arena: {
-        width: 0,
-        height: 0
-    }
+    uiScale: 1,
+    arena: { width: 0, height: 0 }
 };
 
 // DOM References
@@ -27,111 +21,139 @@ const canvas = document.getElementById('arena-canvas');
 const ctx = canvas.getContext('2d');
 const canvasWrap = document.getElementById('canvas-wrap');
 const overlay = document.querySelector('.canvas-overlay');
+const overlayText = document.querySelector('.overlay-text');
 
 /**
- * RESIZE ENGINE
- * This is the "Brain" that connects the CSS Arena box to the JS Drawing logic.
+ * RESIZE & SCALE LOGIC
+ * Measures the CSS-defined arena box and updates the drawing scale.
  */
 function resize() {
-    if (!canvasWrap) return;
+    if (!canvasWrap || !canvas) return;
 
-    // 1. Measure the CSS container
+    // 1. Measure the box provided by your new CSS
     const rect = canvasWrap.getBoundingClientRect();
     
-    // 2. Set Canvas resolution to match the physical pixels on screen
+    // 2. Set internal resolution to match physical screen pixels
     canvas.width = rect.width;
     canvas.height = rect.height;
-    
-    gameState.arena.width = rect.width;
-    gameState.arena.height = rect.height;
+    state.arena.width = rect.width;
+    state.arena.height = rect.height;
 
-    // 3. Calculate Scale Factor based on height
-    // This ensures characters grow/shrink with the arena size
-    gameState.uiScale = rect.height / REFERENCE_HEIGHT;
+    // 3. Calculate Scale Factor
+    // Ensures characters look the same size relative to the box on any monitor
+    state.uiScale = rect.height / REFERENCE_HEIGHT;
 
-    // 4. Force a re-render
     render();
 }
 
 /**
+ * CHAMPION GENERATION
+ * Connects the "Forge" button to the Arena state.
+ */
+async function generateChampion() {
+    const nameInput = document.getElementById('champ-name');
+    const styleInput = document.getElementById('champ-style');
+    const name = nameInput.value.trim() || "Unknown Challenger";
+
+    // Update UI State
+    if (overlayText) overlayText.innerText = "FORGING CHAMPION...";
+    
+    try {
+        // Logic for champion creation
+        state.player = {
+            name: name,
+            hp: 100,
+            maxHp: 100,
+            stats: { atk: 10, def: 10, spd: 10 },
+            style: styleInput.value || "Standard"
+        };
+
+        // Hide overlay and reveal Arena
+        if (overlay) overlay.classList.add('hidden');
+        
+        updateHUD();
+        resize(); // Re-center and scale for new fighter
+        log(`[ SYSTEM ] : CHAMPION [ ${name.toUpperCase()} ] INITIALIZED`);
+
+    } catch (err) {
+        if (overlayText) overlayText.innerText = "GENERATION FAILED";
+        console.error(err);
+    }
+}
+
+/**
  * RENDER LOOP
+ * Draws the game world based on the current uiScale.
  */
 function render() {
-    // Clear the arena
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (!gameState.player && !gameState.enemy) return;
+    if (!state.player) return;
 
-    // Center point of the arena
+    // Calculate dynamic center points
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
 
-    // DRAW PLAYER (Left Side)
-    if (gameState.player) {
-        drawFighter(
-            gameState.player, 
-            centerX - (150 * gameState.uiScale), // Positioned relative to center & scale
-            centerY, 
-            false
-        );
-    }
+    // Draw Player
+    drawFighter(state.player, centerX - (180 * state.uiScale), centerY, false);
 
-    // DRAW ENEMY (Right Side)
-    if (gameState.enemy) {
-        drawFighter(
-            gameState.enemy, 
-            centerX + (150 * gameState.uiScale), 
-            centerY, 
-            true
-        );
+    // Draw Enemy (if exists)
+    if (state.enemy) {
+        drawFighter(state.enemy, centerX + (180 * state.uiScale), centerY, true);
     }
 }
 
 /**
- * FIGHTER DRAWING LOGIC
- * Uses gameState.uiScale to ensure size consistency across resolutions.
+ * FIGHTER DRAWING
+ * Relative to scale and position.
  */
 function drawFighter(fighter, x, y, isEnemy) {
-    const s = gameState.uiScale;
-    
-    // Example: Body is 100px tall at reference height
+    const s = state.uiScale;
     const bodyW = 40 * s;
     const bodyH = 100 * s;
 
-    ctx.fillStyle = isEnemy ? '#ef4444' : '#22c55e';
-    
-    // Simple placeholder drawing logic (Update this with your character rendering)
-    ctx.fillRect(x - bodyW/2, y - bodyH/2, bodyW, bodyH);
-    
-    // Name Tag
+    // Head
+    ctx.fillStyle = isEnemy ? '#ef4444' : '#22c55e'; //
+    ctx.beginPath();
+    ctx.arc(x, y - (40 * s), 25 * s, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Body
+    ctx.fillRect(x - bodyW/2, y - bodyH/4, bodyW, bodyH);
+
+    // Label
     ctx.fillStyle = '#fff';
     ctx.font = `${Math.floor(14 * s)}px 'Share Tech Mono'`;
     ctx.textAlign = 'center';
-    ctx.fillText(fighter.name, x, y - (bodyH/2) - (10 * s));
+    ctx.fillText(fighter.name, x, y - (bodyH/2) - (25 * s));
 }
 
 /**
- * INITIALIZATION & EVENTS
+ * UI UPDATES
  */
-window.addEventListener('resize', resize);
+function updateHUD() {
+    if (!state.player) return;
+    document.getElementById('player-name').innerText = state.player.name;
+    // Update HP bars and other stats here
+}
 
-// Initial scale calculation
+function log(msg) {
+    const logContainer = document.getElementById('combat-log');
+    if (!logContainer) return;
+    const div = document.createElement('div');
+    div.className = 'log-entry log-system';
+    div.innerText = msg;
+    logContainer.prepend(div);
+}
+
+// Global Event Listeners
+window.addEventListener('resize', resize);
 document.addEventListener('DOMContentLoaded', () => {
     resize();
-    console.log("Textborn Arena Engine Initialized.");
+    // Re-bind the generate button if needed
+    const genBtn = document.querySelector('button[onclick="generateChampion()"]');
+    if (genBtn) {
+        genBtn.onclick = null; // Remove inline
+        genBtn.addEventListener('click', generateChampion);
+    }
 });
-
-/* --- BATTLE LOGIC WRAPPERS (Preserving your flow) --- */
-async function generateChampion() {
-    const name = document.getElementById('champ-name').value || "Robot Catgirl";
-    // Show Loading in the overlay
-    const overlayText = document.querySelector('.overlay-text');
-    if (overlayText) overlayText.innerText = "INITIALIZING CHAMPION...";
-
-    // Simulating API call
-    setTimeout(() => {
-        gameState.player = { name: name, hp: 100, maxHp: 100 };
-        if (overlay) overlay.classList.add('hidden');
-        resize();
-    }, 1000);
-}
