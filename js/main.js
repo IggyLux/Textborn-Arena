@@ -1,128 +1,175 @@
 /* ============================================================================
-   TEXTBORN ARENA — CORE ENGINE (Resolution Independent)
+   TEXTBORN ARENA — CORE ENGINE
    ============================================================================ */
 
-// 1. ENGINE STATE
-// All data lives here. Drawing logic reads from this.
+// 1. STATE MANAGEMENT
 const state = {
     player: null,
     enemy: null,
     isBattleActive: false,
     wave: 1,
     uiScale: 1,
-    arena: { width: 0, height: 0 }
+    roster: JSON.parse(localStorage.getItem('textborn_roster')) || []
 };
 
 // 2. DOM REFERENCES
-const canvas = document.getElementById('arena-canvas');
-const ctx = canvas.getContext('2d');
-const canvasWrap = document.getElementById('canvas-wrap');
-const overlay = document.querySelector('.canvas-overlay');
-const overlayText = document.querySelector('.overlay-text');
+const views = {
+    forge: document.getElementById('view-forge'),
+    arena: document.getElementById('view-arena')
+};
+
+const canvas = {
+    arena: document.getElementById('arena-canvas'),
+    preview: document.getElementById('preview-canvas')
+};
 
 /**
- * RESIZE & SCALE ENGINE
- * Measures the #canvas-wrap (the CSS box) and scales the internal drawing resolution.
+ * VIEW NAVIGATION
+ * Swaps between the Forge and the Arena
  */
-function resize() {
-    if (!canvasWrap || !canvas) return;
+function setView(viewName) {
+    views.forge.classList.remove('view-active');
+    views.arena.classList.remove('view-active');
 
-    // Get exact dimensions of the Arena container from CSS
-    const rect = canvasWrap.getBoundingClientRect();
-    
-    // Set internal resolution to match physical screen size
-    canvas.width = rect.width;
-    canvas.height = rect.height;
-    state.arena.width = rect.width;
-    state.arena.height = rect.height;
-
-    // Calculate scale factor relative to a 600px tall "Reference Arena"
-    state.uiScale = rect.height / 600;
-
-    render();
+    if (viewName === 'arena') {
+        views.arena.classList.add('view-active');
+        // We must resize immediately because the canvas was hidden
+        setTimeout(resizeArena, 50); 
+    } else {
+        views.forge.classList.add('view-active');
+    }
 }
 
 /**
- * CHAMPION GENERATION
- * Triggered by the Forge Button.
+ * FORGE LOGIC
+ * Turns text into a Champion object
  */
-async function generateChampion() {
-    console.log("Initiating Champion Generation...");
-
+function forgeChampion() {
     const nameInput = document.getElementById('champ-name');
     const styleInput = document.getElementById('champ-style');
-    const name = nameInput ? nameInput.value.trim() : "Unknown Challenger";
+    const name = nameInput.value.trim() || "Unknown Unit";
 
-    // 1. Update Overlay Feedback
-    if (overlayText) overlayText.innerText = "FORGING CHAMPION...";
+    // Simulate "Generation" logic
+    state.player = {
+        name: name,
+        style: styleInput.value || "Standard",
+        hp: 100,
+        maxHp: 100,
+        stats: {
+            atk: Math.floor(Math.random() * 10) + 10,
+            spd: Math.floor(Math.random() * 10) + 5
+        },
+        color: '#22c55e'
+    };
+
+    // Show the Preview Area
+    document.getElementById('forge-preview-display').classList.remove('hidden');
+    updateForgeUI();
+    renderPreview();
+}
+
+function updateForgeUI() {
+    document.getElementById('preview-display-name').innerText = state.player.name;
+    document.getElementById('stat-hp').style.width = '100%';
+    document.getElementById('stat-atk').style.width = (state.player.stats.atk * 4) + '%';
+    document.getElementById('stat-spd').style.width = (state.player.stats.spd * 4) + '%';
     
-    try {
-        // 2. Build Player Object (Add your AI/Fetch logic here if needed)
-        state.player = {
-            name: name || "Challenger",
-            hp: 100,
-            maxHp: 100,
-            stats: { atk: 10, def: 10, spd: 10 },
-            style: styleInput ? styleInput.value : "Standard"
-        };
-
-        console.log("Champion Generated:", state.player.name);
-
-        // 3. HIDE OVERLAY & REVEAL ARENA
-        // This is where the 'awaiting combatants' disappears
-        if (overlay) {
-            overlay.classList.add('hidden');
-        }
-        
-        // 4. Update UI and Re-draw
-        updateHUD();
-        resize(); // Force a re-render now that state.player exists
-        
-        log(`[ SYSTEM ] : CHAMPION [ ${state.player.name.toUpperCase()} ] INITIALIZED`);
-
-    } catch (err) {
-        console.error("Generation Error:", err);
-        if (overlayText) overlayText.innerText = "GENERATION FAILED";
-    }
+    // Log system message
+    console.log(`System: ${state.player.name} forged successfully.`);
 }
 
 /**
- * RENDER LOOP
- * Handles drawing the characters onto the canvas.
+ * ROSTER SYSTEM (LocalStorage)
  */
-function render() {
-    // Clear previous frame
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // If no player has been generated yet, stop here.
+function saveToRoster() {
     if (!state.player) return;
-
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-
-    // Draw Player (Left side)
-    drawFighter(state.player, centerX - (180 * state.uiScale), centerY, false);
-
-    // Draw Enemy (Right side)
-    if (state.enemy) {
-        drawFighter(state.enemy, centerX + (180 * state.uiScale), centerY, true);
+    
+    // Avoid exact duplicates
+    const exists = state.roster.some(c => c.name === state.player.name);
+    if (!exists) {
+        state.roster.push({...state.player});
+        localStorage.setItem('textborn_roster', JSON.stringify(state.roster));
+        renderRoster();
     }
 }
 
+function renderRoster() {
+    const grid = document.getElementById('roster-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    if (state.roster.length === 0) {
+        grid.innerHTML = '<div class="roster-empty-msg">No champions in roster yet...</div>';
+        return;
+    }
+
+    state.roster.forEach((char, index) => {
+        const card = document.createElement('div');
+        card.className = 'roster-card'; // Ensure this class is in your CSS
+        card.style.border = '1px solid var(--clr-muted)';
+        card.style.padding = '10px';
+        card.style.cursor = 'pointer';
+        card.innerHTML = `
+            <div style="color: var(--clr-primary); font-size: 0.8rem;">${char.name}</div>
+            <div style="font-size: 0.6rem; opacity: 0.5;">${char.style}</div>
+        `;
+        card.onclick = () => {
+            state.player = char;
+            document.getElementById('forge-preview-display').classList.remove('hidden');
+            updateForgeUI();
+            renderPreview();
+        };
+        grid.appendChild(card);
+    });
+}
+
 /**
- * DRAWING UTILITY
- * Draws a representative fighter based on uiScale.
+ * RENDER ENGINES
  */
-function drawFighter(fighter, x, y, isEnemy) {
-    const s = state.uiScale;
+function renderPreview() {
+    const ctx = canvas.preview.getContext('2d');
+    const w = canvas.preview.width;
+    const h = canvas.preview.height;
+    ctx.clearRect(0, 0, w, h);
     
-    // Scale body parts to match the Arena height
+    // Draw centered "i" placeholder for preview
+    const s = h / 200; // local scale for preview box
+    drawFighter(ctx, state.player, w/2, h/2 + (20*s), s);
+}
+
+function resizeArena() {
+    const wrap = document.getElementById('canvas-wrap');
+    if (!wrap || !canvas.arena) return;
+    const rect = wrap.getBoundingClientRect();
+    
+    canvas.arena.width = rect.width;
+    canvas.arena.height = rect.height;
+    state.uiScale = rect.height / 600;
+    
+    renderArena();
+}
+
+function renderArena() {
+    const ctx = canvas.arena.getContext('2d');
+    ctx.clearRect(0, 0, canvas.arena.width, canvas.arena.height);
+
+    if (!state.player) return;
+    
+    const centerX = canvas.arena.width / 2;
+    const centerY = canvas.arena.height / 2;
+    const s = state.uiScale;
+
+    // Draw Player in Arena
+    drawFighter(ctx, state.player, centerX - (180 * s), centerY, s);
+}
+
+function drawFighter(ctx, fighter, x, y, s) {
     const bodyW = 40 * s;
     const bodyH = 100 * s;
     const headR = 25 * s;
 
     // Head
-    ctx.fillStyle = isEnemy ? '#ef4444' : '#22c55e';
+    ctx.fillStyle = fighter.color || '#22c55e';
     ctx.beginPath();
     ctx.arc(x, y - (bodyH/2), headR, 0, Math.PI * 2);
     ctx.fill();
@@ -138,45 +185,24 @@ function drawFighter(fighter, x, y, isEnemy) {
 }
 
 /**
- * HUD & LOG UTILITIES
- */
-function updateHUD() {
-    if (!state.player) return;
-    const pNameEl = document.getElementById('player-name');
-    if (pNameEl) pNameEl.innerText = state.player.name;
-    
-    // Reset Health Bars to 100%
-    const pBar = document.getElementById('player-hp-bar');
-    if (pBar) pBar.style.width = '100%';
-}
-
-function log(msg) {
-    const logContainer = document.getElementById('combat-log');
-    if (!logContainer) return;
-    
-    const entry = document.createElement('div');
-    entry.className = 'log-entry log-system';
-    entry.innerText = msg;
-    logContainer.prepend(entry);
-}
-
-/**
  * INITIALIZATION
  */
-window.addEventListener('resize', resize);
-
 document.addEventListener('DOMContentLoaded', () => {
-    // Run initial sizing
-    resize();
-
-    // Find and Bind the Generate Button
-    const genBtn = document.querySelector('button') || document.querySelector('.btn-generate');
-    if (genBtn) {
-        genBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            generateChampion();
-        });
-    }
+    // 1. Bind Forge Buttons
+    document.getElementById('btn-forge-main').addEventListener('click', forgeChampion);
+    document.getElementById('btn-save-roster').addEventListener('click', saveToRoster);
+    document.getElementById('btn-enter-arena').addEventListener('click', () => {
+        setView('arena');
+    });
     
-    console.log("Textborn Arena Engine: Online");
+    // 2. Bind Arena Buttons
+    document.getElementById('btn-back-to-forge').addEventListener('click', () => {
+        setView('forge');
+    });
+
+    // 3. Setup
+    renderRoster();
+    window.addEventListener('resize', () => {
+        if (views.arena.classList.contains('view-active')) resizeArena();
+    });
 });
