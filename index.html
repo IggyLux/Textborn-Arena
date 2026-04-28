@@ -1,150 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TEXTBORN ARENA</title>
-
-  <!-- Google Fonts: Terminal-adjacent display + mono body -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap"
-    rel="stylesheet"
-  />
-
-  <link rel="stylesheet" href="css/styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEXTBORN ARENA // Describe Anything</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+    <div class="crt-overlay"></div>
 
-  <!-- ═══════════════════════════════════════════════════════════════
-       HEADER
-  ════════════════════════════════════════════════════════════════ -->
-  <header id="app-header">
-    <div class="header-glyph">▸▸</div>
-    <h1 id="game-title">TEXTBORN<span class="accent">ARENA</span></h1>
-    <div class="header-meta">
-      <span id="wave-display">WAVE <span id="wave-number">—</span></span>
-      <span class="sep">|</span>
-      <span id="status-display">IDLE</span>
-    </div>
-  </header>
+    <section id="view-forge" class="view-active">
+        <div class="forge-container">
+            <header class="forge-header">
+                <h1>TEXTBORN ARENA</h1>
+                <p class="tagline">describe anything • become it • fight forever</p>
+            </header>
 
-  <!-- ═══════════════════════════════════════════════════════════════
-       MAIN LAYOUT
-  ════════════════════════════════════════════════════════════════ -->
-  <main id="app-main">
+            <main class="forge-card">
+                <div class="forge-input-section">
+                    <div class="input-group">
+                        <label>CHAMPION NAME OR CONCEPT</label>
+                        <input type="text" id="champ-name" placeholder="e.g. Robot Catgirl, Shadow Knight, Chrome Dragon...">
+                    </div>
+                    <div class="input-group">
+                        <label>COMBAT STYLE (OPTIONAL)</label>
+                        <input type="text" id="champ-style" placeholder="e.g. berserker, agile, tank...">
+                    </div>
+                    <button id="btn-forge-main">▶ GENERATE & FORGE</button>
+                </div>
 
-    <!-- LEFT PANEL: Character Generator -->
-    <section id="panel-generator" class="panel">
-      <h2 class="panel-title">// FORGE CHAMPION</h2>
+                <div id="forge-preview-display" class="hidden">
+                    <div class="preview-layout">
+                        <div class="preview-visual">
+                            <canvas id="preview-canvas"></canvas>
+                        </div>
+                        <div class="preview-info">
+                            <h2 id="preview-display-name">---</h2>
+                            <div id="preview-tags" class="tag-container"></div>
+                            <p id="preview-bio">Initializing biometric data...</p>
+                            
+                            <div class="preview-stats-grid">
+                                <div class="stat-row"><span>HP</span> <div class="stat-bar"><div id="stat-hp" style="width: 50%"></div></div></div>
+                                <div class="stat-row"><span>ATK</span> <div class="stat-bar"><div id="stat-atk" style="width: 50%"></div></div></div>
+                                <div class="stat-row"><span>SPD</span> <div class="stat-bar"><div id="stat-spd" style="width: 50%"></div></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="forge-action-btns">
+                        <button id="btn-save-roster" class="secondary">SAVE TO ROSTER</button>
+                        <button id="btn-enter-arena" class="primary">ENTER ARENA ▶</button>
+                    </div>
+                </div>
+            </main>
 
-      <div class="input-block">
-        <label for="champion-input" class="field-label">CHAMPION NAME OR CONCEPT</label>
-        <input
-          type="text"
-          id="champion-input"
-          class="terminal-input"
-          placeholder="e.g. Ashveil the Cursed Ranger"
-          maxlength="80"
-          autocomplete="off"
-          spellcheck="false"
-        />
-      </div>
-
-      <div class="input-block">
-        <label for="style-input" class="field-label">COMBAT STYLE (OPTIONAL)</label>
-        <input
-          type="text"
-          id="style-input"
-          class="terminal-input"
-          placeholder="e.g. berserker, shadow mage, iron golem"
-          maxlength="60"
-          autocomplete="off"
-          spellcheck="false"
-        />
-      </div>
-
-      <button id="btn-generate" class="btn btn-primary">
-        <span class="btn-prefix">▶</span> GENERATE &amp; ENTER ARENA
-      </button>
-
-      <div id="generator-status" class="status-line" aria-live="polite"></div>
-
-      <!-- Champion stat preview (populated after generation) -->
-      <div id="champion-card" class="stat-card hidden" aria-label="Champion stats">
-        <div class="stat-card-name" id="card-name">—</div>
-        <div class="stat-card-archetype" id="card-archetype">—</div>
-        <div class="stat-grid">
-          <div class="stat-row"><span class="stat-label">HP</span>      <span class="stat-bar-wrap"><span class="stat-bar" id="bar-hp"></span></span>     <span class="stat-val" id="val-hp">—</span></div>
-          <div class="stat-row"><span class="stat-label">ATK</span>     <span class="stat-bar-wrap"><span class="stat-bar" id="bar-atk"></span></span>    <span class="stat-val" id="val-atk">—</span></div>
-          <div class="stat-row"><span class="stat-label">DEF</span>     <span class="stat-bar-wrap"><span class="stat-bar" id="bar-def"></span></span>    <span class="stat-val" id="val-def">—</span></div>
-          <div class="stat-row"><span class="stat-label">SPD</span>     <span class="stat-bar-wrap"><span class="stat-bar" id="bar-spd"></span></span>    <span class="stat-val" id="val-spd">—</span></div>
-          <div class="stat-row"><span class="stat-label">CRIT</span>    <span class="stat-bar-wrap"><span class="stat-bar" id="bar-crit"></span></span>   <span class="stat-val" id="val-crit">—</span></div>
+            <section class="roster-panel">
+                <h3>// SAVED ROSTER</h3>
+                <div id="roster-grid">
+                    <div class="roster-empty-msg">No champions in roster yet...</div>
+                </div>
+            </section>
         </div>
-        <div class="lore-block" id="card-lore">—</div>
-      </div>
     </section>
 
-    <!-- CENTER PANEL: Canvas Arena -->
-    <section id="panel-arena" class="panel panel-center">
-      <h2 class="panel-title">// ARENA</h2>
-      <div id="canvas-wrap">
-        <canvas id="arena-canvas" width="520" height="340" aria-label="Battle arena"></canvas>
-        <div id="canvas-overlay" class="canvas-overlay">
-          <span class="overlay-text">AWAITING COMBATANTS</span>
-        </div>
-      </div>
+    <section id="view-arena">
+        <header class="arena-top-nav">
+            <div class="nav-left">
+                <button id="btn-back-to-forge">« BACK TO FORGE</button>
+            </div>
+            <div class="nav-center">TEXTBORN ARENA</div>
+            <div class="nav-right">WAVE <span id="wave-count">1</span> — <span id="game-status">READY</span></div>
+        </header>
 
-      <!-- HP bars under canvas -->
-      <div id="combatant-hud">
-        <div class="hud-fighter" id="hud-player">
-          <span class="hud-name" id="hud-player-name">PLAYER</span>
-          <div class="hud-bar-track">
-            <div class="hud-bar hud-bar-player" id="hud-hp-player"></div>
-          </div>
-          <span class="hud-hp-val" id="hud-hp-val-player">—</span>
-        </div>
-        <div class="hud-vs">VS</div>
-        <div class="hud-fighter hud-fighter-right" id="hud-enemy">
-          <span class="hud-name" id="hud-enemy-name">ENEMY</span>
-          <div class="hud-bar-track">
-            <div class="hud-bar hud-bar-enemy" id="hud-hp-enemy"></div>
-          </div>
-          <span class="hud-hp-val" id="hud-hp-val-enemy">—</span>
-        </div>
-      </div>
+        <div id="app-main">
+            <aside class="panel" id="panel-player">
+                <div class="panel-header">FORGE DATA</div>
+                <div class="stats-content">
+                    <div id="player-active-stats">
+                        </div>
+                </div>
+            </aside>
 
-      <!-- Battle controls -->
-      <div id="battle-controls">
-        <button id="btn-battle" class="btn btn-battle" disabled>
-          <span class="btn-prefix">⚔</span> START BATTLE
-        </button>
-        <button id="btn-next-wave" class="btn btn-secondary hidden">
-          <span class="btn-prefix">▶</span> NEXT WAVE
-        </button>
-      </div>
+            <main class="panel" id="panel-arena">
+                <div id="canvas-wrap">
+                    <canvas id="arena-canvas"></canvas>
+                    <div class="canvas-overlay">
+                        <div class="overlay-text">AWAITING COMBATANTS</div>
+                    </div>
+                </div>
+
+                <div id="combatant-hud">
+                    <div class="hud-player">
+                        <div class="hud-name" id="hud-player-name">PLAYER</div>
+                        <div class="hud-bar-track"><div class="hud-bar hud-bar-player" id="player-hp-bar"></div></div>
+                    </div>
+                    <div class="hud-vs">VS</div>
+                    <div class="hud-enemy">
+                        <div class="hud-name" id="hud-enemy-name">ENEMY</div>
+                        <div class="hud-bar-track"><div class="hud-bar hud-bar-enemy" id="enemy-hp-bar"></div></div>
+                    </div>
+                </div>
+            </main>
+
+            <aside class="panel" id="panel-log">
+                <div class="panel-header">COMBAT LOG</div>
+                <div id="combat-log">
+                    <div class="log-entry log-system">[ SYSTEM ONLINE — ARENA READY ]</div>
+                </div>
+                <div class="arena-controls">
+                    <button id="btn-start-battle" class="btn-start">⚔ START BATTLE</button>
+                    <button id="btn-next-wave" class="btn-next">▶ NEXT WAVE</button>
+                </div>
+            </aside>
+        </div>
+
+        <footer>
+            <div class="footer-left">TEXTBORN ARENA // PROCEDURAL AUTO-BATTLER</div>
+            <div class="footer-right">SOURCE: // LOCAL_SESSION</div>
+        </footer>
     </section>
 
-    <!-- RIGHT PANEL: Combat Log -->
-    <section id="panel-log" class="panel">
-      <h2 class="panel-title">// COMBAT LOG</h2>
-      <div id="combat-log" role="log" aria-live="polite" aria-label="Combat log">
-        <div class="log-entry log-system">[ SYSTEM ONLINE — ARENA READY ]</div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- ═══════════════════════════════════════════════════════════════
-       FOOTER
-  ════════════════════════════════════════════════════════════════ -->
-  <footer id="app-footer">
-    <span>TEXTBORN ARENA // PROCEDURAL AUTO-BATTLER</span>
-    <span id="footer-source-mode">SOURCE: <span id="source-mode-val">—</span></span>
-  </footer>
-
-  <!-- Entry point — type="module" enables ES6 imports -->
-  <script type="module" src="js/main.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
